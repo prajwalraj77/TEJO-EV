@@ -10,7 +10,8 @@ const vehicle = {
   status: "offline",
 };
 
-const socket = new WebSocket("ws://localhost:5000");
+// const socket = new WebSocket("ws://localhost:5000");
+const socket = new WebSocket("wss://tejo-ev.onrender.com");
 
 socket.on("open", () => {
   console.log(" IoT Simulator connected to WebSocket server");
