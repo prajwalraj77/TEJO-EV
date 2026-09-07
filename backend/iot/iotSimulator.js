@@ -11,31 +11,7 @@ const vehicle = {
 };
 
 // const socket = new WebSocket("ws://localhost:5000");
-const socket = new WebSocket("wss://tejo-ev.onrender.com");
-
-socket.on("open", () => {
-  console.log(" IoT Simulator connected to WebSocket server");
-
-  vehicle.status = "online";
-
-  setInterval(() => {
-    const telemetry = generateTelemetry();
-
-    socket.send(JSON.stringify(telemetry));
-
-    console.log(" Telemetry sent:");
-    console.log(telemetry);
-  }, 3000);
-});
-
-socket.on("close", () => {
-  console.log(" WebSocket connection closed");
-  vehicle.status = "offline";
-});
-
-socket.on("error", (error) => {
-  console.error("WebSocket Error:", error.message);
-});
+// const socket = new WebSocket("wss://tejo-ev.onrender.com");
 
 const generateTelemetry = () => {
   vehicle.speed = Math.floor(Math.random() * 50);
@@ -53,3 +29,43 @@ const generateTelemetry = () => {
 
   return vehicle;
 };
+
+const connectWebSocket = () => {
+  const socket = new WebSocket("wss://tejo-ev.onrender.com");
+
+  socket.on("open", () => {
+    console.log("IoT Simulator connected to WebSocket server");
+
+    vehicle.status = "online";
+
+    const telemetryInterval = setInterval(() => {
+      if (socket.readyState === WebSocket.OPEN) {
+        const telemetry = generateTelemetry();
+
+        socket.send(JSON.stringify(telemetry));
+
+        console.log("Telemetry sent:");
+        console.log(telemetry);
+      }
+    }, 3000);
+
+    socket.on("close", () => {
+      clearInterval(telemetryInterval);
+
+      console.log("WebSocket connection closed");
+      console.log("Reconnecting in 3 seconds...");
+
+      vehicle.status = "offline";
+
+      setTimeout(() => {
+        connectWebSocket();
+      }, 3000);
+    });
+  });
+
+  socket.on("error", (error) => {
+    console.error("WebSocket Error:", error.message);
+  });
+};
+
+connectWebSocket();
