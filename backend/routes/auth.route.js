@@ -7,3 +7,4 @@ authRouter.post("/register", addUser);
 authRouter.post("/login", loginUser);
 
 export default authRouter;
+
